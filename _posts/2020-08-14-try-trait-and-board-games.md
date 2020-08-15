@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "`try_trait` and board games"
-date:   2020-08-13 19:05:18 -0700
+date:   2020-08-14 19:05:18 -0700
 categories: rust 
 ---
 
