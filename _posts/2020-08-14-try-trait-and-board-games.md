@@ -213,31 +213,13 @@ This observation makes writing unit tests for this game a joy:
 
 ```rust
 let inputs = [
-    Input {
-        position: 0,
-        player: Player::X,
-    },
-    Input {
-        position: 8,
-        player: Player::O,
-    },
-    Input {
-        position: 1,
-        player: Player::X,
-    },
-    Input {
-        position: 7,
-        player: Player::O,
-    },
-    Input {
-        position: 2,
-        player: Player::X,
-    },
+    Input { position: 0, player: Player::X, },
+    Input { position: 8, player: Player::O, },
+    Input { position: 1, player: Player::X, },
+    Input { position: 7, player: Player::O, },
+    Input { position: 2, player: Player::X, },
     // X has won at this point, so no more inputs are processed.
-    Input {
-        position: 6,
-        player: Player::O,
-    },
+    Input { position: 6, player: Player::O, },
 ];
 let end = inputs.iter().try_fold(State::initial(), State::transition);
 assert_eq!(
@@ -245,15 +227,9 @@ assert_eq!(
     Phase::Win(
         State {
             board: [
-                Some(Player::X),
-                Some(Player::X),
-                Some(Player::X),
-                None,
-                None,
-                None,
-                None,
-                Some(Player::O),
-                Some(Player::O),
+                Some(Player::X), Some(Player::X), Some(Player::X),
+                None,            None,            None,
+                None,            Some(Player::O), Some(Player::O),
             ]
         }, 
         Player::X
