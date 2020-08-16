@@ -2,6 +2,7 @@
 # Only the main Sass file needs front matter (the dashes are enough)
 ---
 
+@import "tufte";
 @import "minima";
 
 $link-color: rgb(15, 91, 48);
@@ -27,4 +28,3 @@ a, a:link, a:visited {
     text-decoration: underline;
     display: unset;
 }
-

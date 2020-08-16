@@ -1,12 +1,16 @@
 ---
-layout: post
+layout: tufte
 title:  "`try_trait` and board games"
 date:   2020-08-14 19:05:18 -0700
+author: Ming
 categories: rust 
 ---
 
+{: class="marginnote"}
+It's covered in one of the first lessons in the Rust book, which includes [many examples][rust-book] for how it can be used.
+
 In Rust, `?` is a special operator that is commonly used to signal an early return if an error is encountered. 
-It's one of the first lessons in the Rust book, which includes [many examples][rust-book] for how it can be used.
+It's a killer feature of Rust because of how much it improves readability of code, allowing us to write concise code while handling errors.
 
 The [original implementation][original-implementation] of the `?` operator was syntactic sugar for writing 
 
@@ -27,9 +31,13 @@ if err != nil {
 }
 ```
 
-`?` is huge in Rust because of how much it improves readability of code, allowing us to write concise code while handling errors.
-[`try_trait`][try-trait] is a feature that allows Rust programmers to use the `?` operator on types other than `Result`s,
-so that types implementing the `Try` trait can use `?` for any short-circuiting logic. 
+{: class="marginnote"}
+There's a [proposal][go2-proposal] to address error handling boilerplate in Go 2. 
+
+Using `?` in Rust code is great for removing a lot of error handling cruft that might be present in Go code.
+But the question mark operator isn't limited to `Result`s:
+[`try_trait`][try-trait] is a feature that allows Rust programmers to use the `?` operator on any types implementing the `Try` trait,
+so that they can use `?` for any short-circuiting logic. 
 
 # Short-circuiting
 
@@ -52,10 +60,13 @@ assert_eq!(result, Err("Value -3 is negative.".to_string()));
 assert_eq!(it.next(), Some(&4));
 ```
 
+`try_for_each` attempts to apply the closure on each element.
 As long as the closure returns `Ok`, iteration continues as normal, but upon reaching an `Err`, the iteration short-circuits and returns that result. 
-As we can see in the example, the remaining elements aren't consumed after the iteration short-ciruits.
+As we can see in the example, the remaining elements are still available after the call short-ciruits.
 
-`Result` is probably the most commonly used type that implements the `Try` trait, but `Option` implements `Try` as well.
+`Result` is probably the most common return type used when applying these iterator functions.
+But the type signature of the closure passed into `try_for_each` is `FnMut(Self::Item) -> impl Try<Ok = ()>`,
+and it turns out `Option` implements `Try` as well.
 We can modify the closure in the above example to return an `Option` instead, and it behaves in a similar way,
 with `Some` acting as an analogue for `Ok` and `None` for `Err`:
 
@@ -70,6 +81,23 @@ let option = it.try_for_each(|&i| {
 });
 assert_eq!(option, None);
 assert_eq!(it.next(), Some(&4));
+```
+
+Since `Option` also implements `Try`, we can use `?` to write code
+that propagates `Option`s instead of `Result`s:
+
+```rust
+fn bar() -> Option<i32> {
+    Some(3)
+}
+fn baz() -> Option<i32> {
+    None
+}
+fn foo() -> Option<i32> {
+    let i = bar()?;
+    let j = baz()?; // Early return here.
+    i + j
+}
 ```
 
 # Tic-tac-toe
@@ -146,6 +174,9 @@ fn test_phase() -> Phase {
 
 With this in mind, we can implement `Try` for `Phase` like so:
 
+{: class="marginnote"}
+Implementing `Try` essentially amounts to writing converters between your type and `Result`.
+
 ```rust
 impl Try for Phase {
     type Ok = State;
@@ -174,6 +205,9 @@ impl Try for Phase {
 }
 ```
 
+{: class="marginnote"}
+[This][desugar] is what `?` now desugars into.
+
 Now that we’ve enabled the `?` operator on `Phase`, we can go back and rewrite our transition logic:
 
 ```rust
@@ -201,11 +235,15 @@ fn transition(mut state: State, input: &Input) -> Phase {
 }
 ```
 
+For tic-tac-toe we only need to check two game-ending conditions,
+but for complicated games with more game-ending conditions,
+`?` can remove a lot of boilerplate for handling those checks.
+
 ## Applying `try_fold`
 
-When we think about playing the game as a whole, we’re really just taking an initial state (an empty board) 
+If we try to generalize playing tic-tac-toe, we’re really just taking an initial state (an empty board) 
 and applying a sequence of modifications to it (placing marks in cells) until we obtain a final state. 
-This procedure can be generalized as taking a `fold` over the sequence of `Input`s, with a seed value of the initial 
+This procedure is equivalent to taking a `fold` over the sequence of `Input`s, with a seed value of the initial 
 state `State::initial()` and a combining function `transition`. 
 Conveniently, we also need to stop execution as soon as we detect that the game is over, 
 which is behavior that `try_fold` offers. 
@@ -241,8 +279,10 @@ A complete implementation of tic-tac-toe using this pattern is available at <htt
 
 [try-trait]:   https://doc.rust-lang.org/beta/unstable-book/library-features/try-trait.html
 [rust-book]:   https://doc.rust-lang.org/edition-guide/rust-2018/error-handling-and-panics/the-question-mark-operator-for-easier-error-handling.html
+[go2-proposal]: https://go.googlesource.com/proposal/+/master/design/go2draft-error-handling-overview.md
 [original-implementation]: https://github.com/japaric/rust/blob/2de4932453a99a19e9033edb47db7a66a612188c/src/librustc_front/lowering.rs#L1613-L1620
 [iterator]:    https://doc.rust-lang.org/std/iter/trait.Iterator.html
 [try-find]:    https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.try_find
 [try-fold]:    https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.try_fold
 [try-for-each]: https://doc.rust-lang.org/std/iter/trait.Iterator.html#method.try_for_each
+[desugar]: https://rust-lang.github.io/rfcs/1859-try-trait.html#desugaring-and-the-try-trait
