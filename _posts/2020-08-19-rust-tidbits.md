@@ -151,3 +151,21 @@ let mut s = "Hi".to_string();
 // Hm not sure what get_suffix is returning -- let me check.
 s.push(dbg!(get_suffix()));
 ```
+
+### 2. Another `print!` inconsistency
+
+Anyone who has tried to write an interactive CLI tool in Rust has probably
+encountered this one.
+Imagine a confirmation prompt
+
+```rust
+print!("Are you sure? (y/n): ");
+let answer = read_input()?;
+```
+
+Surprisingly, when you run this nothing appears.
+Rust's stdout implementation is line buffered
+(<https://github.com/rust-lang/rust/blob/5a6a41e7847ff5f85a31b87431ce2af29c567f1d/library/std/src/io/stdio.rs#L488-L490>)
+so `print!` by itself won't flush to stdout.
+You'll either need to add a newline (`\n` or `println!`)
+or manually invoke `std::io::stdout().flush()`.
