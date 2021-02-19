@@ -2,14 +2,12 @@
 # Only the main Sass file needs front matter (the dashes are enough)
 ---
 
-@import "tufte";
 @import "minima";
+@import "tufte";
 
 $link-color: rgb(15, 91, 48);
-$link-color-opaque: rgba(15, 91, 48, 0.2);
-$accent: #055829;
-$highlight-color: #d3f1e8;
-$main-bg-color: #fcfffc;
+$highlight-color: rgb(211, 241, 232);
+$main-bg-color: rgb(252, 255, 252);
 
 ::selection {
     background-color: $highlight-color;
@@ -28,4 +26,9 @@ a, a:link, a:visited {
     color: $link-color;
     text-decoration: underline;
     display: unset;
+
+    .social-media-list &:hover {
+        text-decoration: underline;
+    }
 }
+
