@@ -2,7 +2,7 @@
 layout: post
 title:  "Rust tidbits"
 date:   2020-08-19
-categories: rust 
+tags: rust
 ---
 
 - TOC

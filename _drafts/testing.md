@@ -2,7 +2,7 @@
 layout: post
 title:  Testing
 description: Just for testing
-categories: testing
+tags:   testing
 ---
 
 # Table of Contents
